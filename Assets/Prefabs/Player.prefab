@@ -178,11 +178,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   moveSpeed: 5
   jumpForce: 10
-  groundCheckDistance: 0.5
+  groundCheckDistance: 0
   groundLayer:
     serializedVersion: 2
     m_Bits: 8
   gravityScale: 3
+  showDebug: 1
 --- !u!114 &-3754167913485697939
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -197,8 +198,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   moveSpeed: 5
   jumpForce: 8
-  groundCheckDistance: 0.1
+  groundCheckDistance: 0.6
   groundLayer:
     serializedVersion: 2
     m_Bits: 8
   gravityScale: 2
+  showDebug: 1

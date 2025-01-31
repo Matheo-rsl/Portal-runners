@@ -435,10 +435,10 @@ MonoBehaviour:
   portalPrefab: {fileID: 2827994972144690771, guid: 723b21093d9747049827ac695c8deab5, type: 3}
   playerPrefab: {fileID: 885896545114610160, guid: 1ba66703a903d484e8c284e24075a49d, type: 3}
   platformDistance: 3
-  minY: -2
-  maxY: 2
+  minY: -1
+  maxY: 1
   portalProbability: 0.3
-  minVerticalDistance: 2
+  minVerticalDistance: 1
 --- !u!4 &1487689326
 Transform:
   m_ObjectHideFlags: 0
