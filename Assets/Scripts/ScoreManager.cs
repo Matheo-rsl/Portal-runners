@@ -1,53 +1,54 @@
 using UnityEngine;
 using TMPro;
+using UnityEngine.SceneManagement;
 
 public class ScoreManager : MonoBehaviour
 {
     [SerializeField] private TextMeshProUGUI scoreText;
-    [SerializeField] private float scoreMultiplier = 0.1f;
+    private float score = 0;
+    private GameObject player;
+    private Vector3 lastPosition;
+    private float scoreMultiplier = 0.2f; // Multiplicateur de score ajouté
     
-    private float score = 0f;
-    private Vector3 startPosition;
-    private Transform player;
-    private bool isInitialized = false;
-    
-    private void Update()
+    private void Start()
     {
-        if (!isInitialized)
-        {
-            GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
-            if (playerObj != null)
-            {
-                player = playerObj.transform;
-                startPosition = player.position;
-                isInitialized = true;
-                Debug.Log("Joueur trouvé, position initiale : " + startPosition);
-            }
-        }
-        
+        player = GameObject.FindGameObjectWithTag("Player");
         if (player != null)
         {
-            float distance = (player.position.x - startPosition.x);
-            score = Mathf.Floor(distance * scoreMultiplier);
-            UpdateScoreDisplay();
-            
-            if (score > 0)
-            {
-                Debug.Log("Distance : " + distance + ", Score : " + score);
-            }
+            lastPosition = player.transform.position;
         }
     }
     
-    private void UpdateScoreDisplay()
+    private void Update()
     {
+        if (player == null)
+        {
+            player = GameObject.FindGameObjectWithTag("Player");
+            if (player != null)
+            {
+                lastPosition = player.transform.position;
+            }
+            return;
+        }
+        
+        float distance = player.transform.position.x - lastPosition.x;
+        score += distance * scoreMultiplier; // Multiplication par 0.2
+        lastPosition = player.transform.position;
+        
         if (scoreText != null)
         {
-            scoreText.text = $"Score: {score}";
+            scoreText.text = $"Score: {Mathf.FloorToInt(score)}";
         }
     }
     
     public float GetScore()
     {
         return score;
+    }
+
+    private void RestartGame()
+    {
+        Time.timeScale = 1f; // Reprend le temps normal
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 }

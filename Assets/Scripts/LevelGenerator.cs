@@ -55,9 +55,9 @@ public class LevelGenerator : MonoBehaviour
     {
         if (player != null && scoreManager != null)
         {
-            // Augmente la difficulté tous les 15 points
+            // Augmente la difficulté tous les 10 points au lieu de 15
             int currentScore = Mathf.FloorToInt(scoreManager.GetScore());
-            int difficultyLevel = currentScore / 15;
+            int difficultyLevel = currentScore / 10;
             
             if (difficultyLevel > lastDifficultyIncrease)
             {
@@ -65,8 +65,8 @@ public class LevelGenerator : MonoBehaviour
                 float newSpeed = playerController.GetMoveSpeed() * 1.05f;
                 playerController.SetMoveSpeed(newSpeed);
                 
-                // Augmente la distance entre les plateformes de 5%
-                currentPlatformDistance *= 1.05f;
+                // Augmente la distance entre les plateformes de 2.5% au lieu de 5%
+                currentPlatformDistance *= 1.025f;
                 
                 lastDifficultyIncrease = difficultyLevel;
                 Debug.Log($"Difficulté augmentée ! Niveau : {difficultyLevel}, Vitesse : {newSpeed}, Distance : {currentPlatformDistance}");
