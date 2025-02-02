@@ -184,3 +184,4 @@ MonoBehaviour:
   gravityScale: 2
   teleportOffset: 1.5
   outOfBoundsTime: 1
+  gameOverScoreText: {fileID: 0}

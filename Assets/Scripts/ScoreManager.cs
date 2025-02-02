@@ -3,42 +3,38 @@ using TMPro;
 
 public class ScoreManager : MonoBehaviour
 {
-    [Header("Score Settings")]
-    [SerializeField] private float scoreMultiplier = 1f;
     [SerializeField] private TextMeshProUGUI scoreText;
+    [SerializeField] private float scoreMultiplier = 0.1f;
     
     private float score = 0f;
     private Vector3 startPosition;
     private Transform player;
-    
-    private void Start()
-    {
-        // Trouve le joueur
-        GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
-        if (playerObj != null)
-        {
-            player = playerObj.transform;
-            startPosition = player.position;
-        }
-        
-        // Vérifie si le TextMeshProUGUI est assigné
-        if (scoreText == null)
-        {
-            Debug.LogError("Score Text non assigné dans ScoreManager!");
-        }
-        
-        UpdateScoreDisplay();
-    }
+    private bool isInitialized = false;
     
     private void Update()
     {
+        if (!isInitialized)
+        {
+            GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
+            if (playerObj != null)
+            {
+                player = playerObj.transform;
+                startPosition = player.position;
+                isInitialized = true;
+                Debug.Log("Joueur trouvé, position initiale : " + startPosition);
+            }
+        }
+        
         if (player != null)
         {
-            // Calcule le score basé sur la distance parcourue
-            float distance = player.position.x - startPosition.x;
+            float distance = (player.position.x - startPosition.x);
             score = Mathf.Floor(distance * scoreMultiplier);
-            
             UpdateScoreDisplay();
+            
+            if (score > 0)
+            {
+                Debug.Log("Distance : " + distance + ", Score : " + score);
+            }
         }
     }
     
@@ -54,4 +50,4 @@ public class ScoreManager : MonoBehaviour
     {
         return score;
     }
-} 
+}

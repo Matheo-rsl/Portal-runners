@@ -3,43 +3,46 @@ using System.Collections.Generic;
 
 public class LevelGenerator : MonoBehaviour
 {
-    [Header("Prefabs")]
+    [Header("Platform Settings")]
     [SerializeField] private GameObject platformPrefab;
     [SerializeField] private GameObject portalPrefab;
     [SerializeField] private GameObject playerPrefab;
+    [SerializeField] private float initialPlatformDistance = 8.5f;
+    [SerializeField] private float minY = -1.5f;
+    [SerializeField] private float maxY = 1.5f;
+    [SerializeField] private float portalProbability = 0.2f;
+    [SerializeField] private float maxHeightDifference = 2.5f; // Maximum de différence de hauteur possible
     
     [Header("Generation Settings")]
-    [SerializeField] private float platformDistance = 20f;     // Augmenté significativement
-    [SerializeField] private float heightVariation = 2f;
-    [SerializeField] private float minY = -3f;
-    [SerializeField] private float maxY = 3f;
-    [SerializeField] private float portalProbability = 0.3f;
+    [SerializeField] private float generationDistance = 10f;
+    [SerializeField] private float deletionDistance = 15f;
     
-    private float lastPlatformX = 0f;
-    private float lastPlatformY = 0f;
+    private float lastGeneratedX;
+    private float lastGeneratedY;
+    private GameObject player;
     private List<GameObject> generatedObjects = new List<GameObject>();
-    private Transform player;
+    private ScoreManager scoreManager;
+    private PlayerController playerController;
+    private float currentPlatformDistance;
+    private int lastDifficultyIncrease = 0;
     
     private void Start()
     {
-        // Nettoie les objets existants
-        foreach (var obj in generatedObjects)
-        {
-            if (obj != null) Destroy(obj);
-        }
-        generatedObjects.Clear();
+        scoreManager = FindObjectOfType<ScoreManager>();
+        currentPlatformDistance = initialPlatformDistance;
         
-        // Crée la plateforme initiale
-        Vector2 startPosition = Vector2.zero;
-        GameObject startPlatform = CreatePlatform(startPosition);
+        Vector2 firstPlatformPosition = new Vector2(0, 0);
+        GameObject firstPlatform = Instantiate(platformPrefab, firstPlatformPosition, Quaternion.identity);
+        generatedObjects.Add(firstPlatform);
+        lastGeneratedY = 0;
         
-        // Place le joueur au-dessus de la première plateforme
-        Vector2 playerSpawnPos = startPosition + Vector2.up * 1f;
-        GameObject playerObj = Instantiate(playerPrefab, playerSpawnPos, Quaternion.identity);
-        player = playerObj.transform;
+        // Crée le joueur avec la nouvelle taille
+        Vector2 playerPosition = firstPlatformPosition + Vector2.up * 0.5f;
+        player = Instantiate(playerPrefab, playerPosition, Quaternion.identity);
+        player.transform.localScale = new Vector3(0.5f, 1f, 1f); // Large de 0.5 et haut de 1
+        playerController = player.GetComponent<PlayerController>();
         
-        lastPlatformX = 0f;
-        lastPlatformY = 0f;
+        lastGeneratedX = 0;
         
         // Génère les premières plateformes
         for (int i = 0; i < 5; i++)
@@ -50,77 +53,73 @@ public class LevelGenerator : MonoBehaviour
     
     private void Update()
     {
-        if (player != null)
+        if (player != null && scoreManager != null)
         {
-            // Génère de nouvelles plateformes quand le joueur avance
-            while (player.position.x > lastPlatformX - 10f)
+            // Augmente la difficulté tous les 15 points
+            int currentScore = Mathf.FloorToInt(scoreManager.GetScore());
+            int difficultyLevel = currentScore / 15;
+            
+            if (difficultyLevel > lastDifficultyIncrease)
+            {
+                // Augmente la vitesse du joueur de 5%
+                float newSpeed = playerController.GetMoveSpeed() * 1.05f;
+                playerController.SetMoveSpeed(newSpeed);
+                
+                // Augmente la distance entre les plateformes de 5%
+                currentPlatformDistance *= 1.05f;
+                
+                lastDifficultyIncrease = difficultyLevel;
+                Debug.Log($"Difficulté augmentée ! Niveau : {difficultyLevel}, Vitesse : {newSpeed}, Distance : {currentPlatformDistance}");
+            }
+            
+            // Génère de nouvelles plateformes
+            while (lastGeneratedX - player.transform.position.x < 10f)
             {
                 GenerateNextPlatform();
             }
             
-            // Nettoie les anciennes plateformes
-            CleanupOldPlatforms();
+            // Supprime les anciennes plateformes
+            for (int i = generatedObjects.Count - 1; i >= 0; i--)
+            {
+                if (generatedObjects[i] != null)
+                {
+                    float distance = generatedObjects[i].transform.position.x - player.transform.position.x;
+                    if (distance < -15f)
+                    {
+                        Destroy(generatedObjects[i]);
+                        generatedObjects.RemoveAt(i);
+                    }
+                }
+                else
+                {
+                    generatedObjects.RemoveAt(i);
+                }
+            }
         }
     }
     
     private void GenerateNextPlatform()
     {
-        // Distance horizontale fixe plus grande
-        float nextX = lastPlatformX + platformDistance;
-        
-        // Calcul de la hauteur avec plus de variation
-        float heightChange = Random.Range(-heightVariation, heightVariation);
-        float nextY = Mathf.Clamp(lastPlatformY + heightChange, minY, maxY);
-        
-        // Évite les plateformes trop proches en Y
-        if (Mathf.Abs(nextY - lastPlatformY) < 1f)
-        {
-            nextY = lastPlatformY + (heightChange >= 0 ? 1f : -1f);
-        }
-        
-        // Garde la plateforme dans les limites
-        nextY = Mathf.Clamp(nextY, minY, maxY);
-        
+        float nextX = lastGeneratedX + currentPlatformDistance;
+        float minPossibleY = Mathf.Max(minY, lastGeneratedY - maxHeightDifference);
+        float maxPossibleY = Mathf.Min(maxY, lastGeneratedY + maxHeightDifference);
+        float nextY = Random.Range(minPossibleY, maxPossibleY);
         Vector2 position = new Vector2(nextX, nextY);
-        GameObject platform = CreatePlatform(position);
         
-        // Portails sur les grands écarts
-        if (Random.value < portalProbability && Mathf.Abs(nextY - lastPlatformY) > heightVariation * 0.5f)
-        {
-            CreatePortal(position);
-        }
-        
-        lastPlatformX = nextX;
-        lastPlatformY = nextY;
-    }
-    
-    private GameObject CreatePlatform(Vector2 position)
-    {
         GameObject platform = Instantiate(platformPrefab, position, Quaternion.identity);
         generatedObjects.Add(platform);
-        return platform;
-    }
-    
-    private void CreatePortal(Vector2 platformPosition)
-    {
-        Vector2 portalPosition = platformPosition + Vector2.up * 1.2f;
-        GameObject portal = Instantiate(portalPrefab, portalPosition, Quaternion.identity);
-        generatedObjects.Add(portal);
-    }
-    
-    private void CleanupOldPlatforms()
-    {
-        if (player == null) return;
         
-        float cleanupX = player.position.x - 15f;
-        generatedObjects.RemoveAll(obj => 
+        if (Random.value < portalProbability)
         {
-            if (obj != null && obj.transform.position.x < cleanupX)
-            {
-                Destroy(obj);
-                return true;
-            }
-            return false;
-        });
+            Vector3 portalPos = position;
+            portalPos.y += 0.75f; // Changé à 0.75
+            GameObject portal = Instantiate(portalPrefab, portalPos, Quaternion.identity);
+            portal.transform.localScale = new Vector3(0.5f, 1f, 1f);
+            portal.transform.parent = platform.transform;
+            generatedObjects.Add(portal);
+        }
+        
+        lastGeneratedX = nextX;
+        lastGeneratedY = nextY;
     }
 } 
