@@ -11,7 +11,6 @@ GameObject:
   - component: {fileID: 7540750535082367941}
   - component: {fileID: 7527775432693944445}
   - component: {fileID: 2294684484303589036}
-  - component: {fileID: 6839482789115063172}
   - component: {fileID: -8985407167101907045}
   m_Layer: 0
   m_Name: GravityPortal
@@ -136,18 +135,6 @@ BoxCollider2D:
   m_AutoTiling: 0
   m_Size: {x: 1, y: 1}
   m_EdgeRadius: 0
---- !u!114 &6839482789115063172
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2827994972144690771}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b0bbc09f2529ef745a91e92cbf44c2ed, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!114 &-8985407167101907045
 MonoBehaviour:
   m_ObjectHideFlags: 0
